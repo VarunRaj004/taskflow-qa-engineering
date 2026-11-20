@@ -8,6 +8,14 @@ application rather than written speculatively.
 **This is an independent portfolio project**, not employment experience, and not a claim about
 any employer's or client's product.
 
+**A note on CI status:** the GitHub Actions workflow on `main` is expected to show as failing.
+That's by design, not a broken pipeline: the Postman/Newman suite correctly fails two
+assertions for BUG-001 and BUG-002 (see `documentation/defect-report.md`), two real, open,
+low-severity defects this project found and documented rather than silently fixing. The
+workflow is written so that known failure still lets the Playwright suite run and every report
+upload as an artifact — see the "Fail the job if Newman found API defects" step in
+`.github/workflows/qa-tests.yml`.
+
 ## What is being tested
 
 No pre-existing React + Spring Boot + MySQL task-management application was available to test
