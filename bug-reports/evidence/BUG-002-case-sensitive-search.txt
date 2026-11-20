@@ -1,0 +1,20 @@
+Evidence for BUG-002 — GET /api/tasks?search= is case-sensitive, contradicting REQ-TASK-007
+
+Execution 1 (Newman, api-testing/postman-collection.json, "2. Tasks / List tasks - search is
+case-insensitive per REQ-TASK-007 (uppercase term)"):
+  GET http://localhost:8090/api/tasks?search=GROCERIES
+  (task titled exactly "Buy groceries" exists for this user)
+  Actual: 200 OK, {"tasks":[],"count":0}
+  AssertionError: REQ-TASK-007: an uppercase search term still matches the lowercase
+  'groceries' task title — expected false to be true
+
+Execution 2 (independent manual reproduction via curl, same day, different task/user):
+  $ curl -s "http://localhost:8090/api/tasks?search=REPRODUCE" -H "Authorization: Bearer <redacted>"
+  (task titled exactly "Reproduce bug task" exists for this user)
+  {"tasks":[],"count":0}
+
+Both executions show the same behaviour: a search term that differs only in case from the
+actual title returns zero results, instead of matching case-insensitively as
+API_CONTRACT.md / REQ-TASK-007 specify. An exact-case search (e.g. "groceries") does match
+(confirmed separately, not shown here) — the defect is specifically the missing
+case-insensitivity, not a total search failure.

@@ -1,0 +1,31 @@
+Evidence for BUG-003 — CORS misconfiguration blocking all cross-origin frontend requests
+
+Captured from the browser console and network log while submitting the real registration form
+at http://localhost:5173/register (backend running at http://localhost:8090), before the fix:
+
+Console:
+  [error] Access to fetch at 'http://localhost:8090/api/auth/register' from origin
+          'http://localhost:5173' has been blocked by CORS policy: Response to preflight
+          request doesn't pass access control check: No 'Access-Control-Allow-Origin' header
+          is present on the requested resource.
+  [error] Failed to load resource: net::ERR_FAILED
+
+Network:
+  OPTIONS http://localhost:8090/api/auth/register -> 403
+  POST    http://localhost:8090/api/auth/register -> [FAILED: net::ERR_FAILED] (never reached
+          the server; blocked client-side after the failed preflight)
+
+Root cause (aut-demo/backend/src/main/java/com/taskflow/demo/config/SecurityConfig.java):
+  .cors(cors -> cors.disable())
+  CORS was explicitly disabled, so no Access-Control-Allow-Origin header was ever returned,
+  and the browser blocked every request the frontend (a different origin/port) made to the
+  backend - meaning the shipped frontend could never successfully call the API at all.
+
+Consequence observed via Playwright (automation/playwright/, first run): 9 of 11 UI tests timed
+out waiting for a navigation that register()/login() never performed, because the underlying
+fetch never received a usable response. See reports/playwright-html-report (pre-fix run is not
+retained; see regression-test-report.md for the before/after summary).
+
+Fix verified: after adding a CorsConfigurationSource permitting the frontend's origin (see the
+same file, post-fix), the identical registration flow succeeds with no console errors, and all
+11 Playwright tests pass. See documentation/regression-test-report.md.

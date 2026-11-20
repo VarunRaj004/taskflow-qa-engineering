@@ -1,0 +1,19 @@
+{
+  "id": "taskflow-qa-env-example",
+  "name": "TaskFlow QA - Local (example)",
+  "values": [
+    { "key": "baseUrl", "value": "http://localhost:8090", "type": "default", "enabled": true },
+    { "key": "userAEmail", "value": "", "type": "default", "enabled": true },
+    { "key": "userAPassword", "value": "ChangeMe123!", "type": "secret", "enabled": true },
+    { "key": "userAToken", "value": "", "type": "secret", "enabled": true },
+    { "key": "userAId", "value": "", "type": "default", "enabled": true },
+    { "key": "userBEmail", "value": "", "type": "default", "enabled": true },
+    { "key": "userBPassword", "value": "ChangeMe123!", "type": "secret", "enabled": true },
+    { "key": "userBToken", "value": "", "type": "secret", "enabled": true },
+    { "key": "userBId", "value": "", "type": "default", "enabled": true },
+    { "key": "lastTaskId", "value": "", "type": "default", "enabled": true },
+    { "key": "userBTaskId", "value": "", "type": "default", "enabled": true },
+    { "key": "responseTimeThresholdMs", "value": "1000", "type": "default", "enabled": true }
+  ],
+  "_postman_variable_scope": "environment"
+}

@@ -1,0 +1,23 @@
+Evidence for BUG-001 — PUT /api/tasks/{id} accepts a whitespace-only title
+
+Execution 1 (Newman, api-testing/postman-collection.json, "2. Tasks / Update task -
+whitespace-only title per REQ-TASK-002 (expect 400)"):
+  PUT http://localhost:8090/api/tasks/1  body: {"title": "   "}
+  Actual: 200 OK
+  AssertionError: REQ-TASK-002: update rejects a blank/whitespace-only title just like create
+  does — expected response to have status code 400 but got 200
+
+Execution 2 (independent manual reproduction via curl, same day, different task id):
+  $ curl -s -X PUT "http://localhost:8090/api/tasks/5" -H "Content-Type: application/json" \
+      -H "Authorization: Bearer <redacted>" -d '{"title":"   "}' -w "\nHTTP_STATUS:%{http_code}\n"
+  {"id":5,"title":"   ","status":"TODO","priority":"MEDIUM","ownerId":1,
+   "createdAt":"2026-11-20T04:59:50.935777Z","updatedAt":"2026-11-20T04:59:51.988968800Z"}
+  HTTP_STATUS:200
+
+Contrast with POST /api/tasks (create), which correctly rejects the same payload with 400 (see
+api-testing/postman-collection.json, "Create task - blank title (expect 400)" — passes).
+
+Database confirmation (database-testing/validation-queries.sql, DV-03, run against the local
+MySQL test instance):
+  SELECT id, title, ... FROM tasks WHERE owner_id = 1;
+  -> id=5, title="   " (three literal space characters), persisted as-is.

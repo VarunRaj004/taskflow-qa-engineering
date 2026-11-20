@@ -1,0 +1,34 @@
+# Node (Playwright suite, etc.)
+node_modules/
+npm-debug.log*
+
+# Playwright / generated test reports - CI uploads these as artifacts instead of committing them
+reports/playwright-html-report/
+reports/playwright-results/
+reports/newman/*.html
+reports/newman/*.json
+reports/newman/*.xml
+automation/playwright/test-results/
+automation/playwright/playwright-report/
+automation/playwright/.env
+
+# Backend
+aut-demo/backend/target/
+aut-demo/backend/run.log
+aut-demo/backend/*.log
+
+# Frontend
+aut-demo/frontend/dist/
+aut-demo/frontend/frontend-run.log
+aut-demo/frontend/*.log
+
+# Env files (placeholders live in .env.example instead)
+.env
+*.env
+!*.env.example
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.iml

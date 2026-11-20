@@ -1,0 +1,28 @@
+Evidence for BUG-004 — sortBy=priority does not sort by priority severity
+
+Execution 1 (user qa.smoke+001@example.test, tasks with priority LOW/HIGH/MEDIUM present
+alongside pre-existing MEDIUM tasks):
+  $ curl "http://localhost:8090/api/tasks?sortBy=priority&sortDir=desc" -H "Authorization: Bearer <redacted>"
+  priority order returned: MEDIUM -> MEDIUM -> MEDIUM -> LOW -> HIGH
+
+  $ curl "http://localhost:8090/api/tasks?sortBy=priority&sortDir=asc" -H "Authorization: Bearer <redacted>"
+  priority order returned: HIGH -> LOW -> MEDIUM -> MEDIUM -> MEDIUM
+
+Execution 2 (independent: a freshly registered user, exactly one task per priority, created in
+the order LOW, HIGH, MEDIUM so creation order cannot explain the result):
+  $ curl "http://localhost:8090/api/tasks?sortBy=priority&sortDir=desc" -H "Authorization: Bearer <redacted>"
+  priority order returned: MEDIUM -> LOW -> HIGH
+
+Expected (per the natural meaning of "sort by priority", descending = most urgent first):
+  HIGH -> MEDIUM -> LOW
+
+Actual, both executions: the order matches alphabetical ordering of the enum name
+("HIGH" < "LOW" < "MEDIUM" ascending), not the severity rank declared in the Java enum
+(entity/TaskPriority.java: LOW, MEDIUM, HIGH in that order). Root cause:
+TaskService.java builds the query with plain Spring Data `Sort.by(direction, "priority")`,
+which issues a straightforward `ORDER BY priority` - this sorts by whatever order MySQL uses
+for the stored value, not by a severity rank mapping (e.g. LOW=0, MEDIUM=1, HIGH=2).
+
+Impact: a user sorting their tasks by priority (e.g. "show me the most urgent work first")
+gets a list that is not actually ordered by urgency - a real, user-facing correctness/usability
+defect, not a theoretical one.
